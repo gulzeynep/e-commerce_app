@@ -12,7 +12,7 @@ from config import (KAFKA_BOOTSTRAP_SERVERS,
                     POSTGRES_PORT,
                     POSTGRES_DB,
                     POSTGRES_USER,
-                    POSTGRES_PASSWORD)
+                    POSTGRES_PASS)
 
 
 KAFKA_TOPIC = "product_views"
@@ -72,7 +72,7 @@ async def run_consumer():
         port=POSTGRES_PORT,
         database=POSTGRES_DB,
         user=POSTGRES_USER,
-        password=POSTGRES_PASSWORD
+        password=POSTGRES_PASS
     )
     await setup_database(pool)
 
