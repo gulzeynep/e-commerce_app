@@ -1,0 +1,20 @@
+#api
+fastapi
+uvicorn[standard] 
+
+#database, cache, scheduler
+sqlalchemy
+asyncpg
+asyncpg-utils
+redis
+aioredis
+apscheduler
+
+#kafka
+aiokafka
+confluent-kafka
+
+#testing
+pytest-asyncio
+httpx
+anyio
