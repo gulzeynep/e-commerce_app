@@ -46,6 +46,75 @@ services:
     networks:
       - app-network
 
+  redis:
+    image: redis:alpine
+    container_name: redis-cache
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
+
+# python 
+  api:
+      build:
+        context: .
+        dockerfile: Dockerfile.python
+      container_name: fastapi-backend
+      command: uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
+      ports:
+        - "8000:8000"
+      volumes:
+        - .:/app  # Kod değişince otomatik yenilensin diye
+      depends_on:
+        - postgres-db
+        - redis-cache
+      networks:
+        - app-network
+
+  consumer:
+    build:
+      context: .
+      dockerfile: Dockerfile.python
+    container_name: kafka-consumer
+    command: python kafka_services/consumer.py
+    volumes:
+      - .:/app
+    depends_on:
+      - kafka
+      - postgres-db
+    networks:
+      - app-network
+
+  etl:
+    build:
+      context: .
+      dockerfile: Dockerfile.python
+    container_name: etl-worker
+    command: python etl/etl.py
+    volumes:
+      - .:/app
+    depends_on:
+      - postgres-db
+      - redis-cache
+    networks:
+      - app-network
+
+#frontend 
+
+  frontend:
+      build:
+        context: ./frontend
+      container_name: react-frontend
+      ports:
+        - "5173:5173"
+      volumes:
+        - ./frontend:/app
+        - /app/node_modules # Local node_modules'ü ezmemesi için
+      depends_on:
+        - api
+      networks:
+        - app-network
+
 volumes:
   postgres_data:
   kafka_data: 
