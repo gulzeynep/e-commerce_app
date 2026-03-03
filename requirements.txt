@@ -1,20 +1,21 @@
-#api
+# api
 fastapi
-uvicorn[standard] 
+uvicorn[standard]
+python-multipart
 
-#database, cache, scheduler
-sqlalchemy
+# database 
+sqlalchemy>=2.0.0
 asyncpg
-asyncpg-utils
-redis
-aioredis
-apscheduler
+redis>=4.2.0
 
-#kafka
+# Kafka
 aiokafka
-confluent-kafka
 
-#testing
+# config and env 
+pydantic-settings
+python-dotenv
+
+# Testing
+pytest
 pytest-asyncio
 httpx
-anyio
