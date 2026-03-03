@@ -1,5 +1,6 @@
 import sys, os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from sqlalchemy import select, update, desc
 import redis.asyncio as redis 
@@ -11,7 +12,7 @@ from config import (POSTGRES_HOST,
                     POSTGRES_PASSWORD, 
                     REDIS_HOST, 
                     REDIS_PORT)
-from models import Base, Product, BrowseHistory, GenBestSeller, CatBestSeller
+from api.models import Base, Product, BrowseHistory, GenBestSeller, CatBestSeller
 
 DATABASE_URL = f"postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
 

@@ -1,6 +1,9 @@
+import sys, os 
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-import database
+from api import database
 
 app = FastAPI(title="E-Commerce Recommendation API")
 

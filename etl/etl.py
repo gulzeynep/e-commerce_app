@@ -4,12 +4,20 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import asyncio
 import logging
 from sqlalchemy import delete, select, func, desc
-from api.database import AsyncSessionLocal, redis_client
-from api.models import GenBestSeller, CatBestSeller, Product, Order, OrderItem
+from api.database import AsyncSessionLocal, redis_client, engine 
+from api.models import Base, GenBestSeller, CatBestSeller, Product, Order, OrderItem
 
 logging.basicConfig(level=logging.INFO)
 
+async def init_db():
+    logging.info("--- Check and create missing db tables. ---")
+    async with engine.begin() as conn: 
+        await conn.run_sync(Base.metadata.create_all)
+    logging.info("--- DB check complete. ---")
+
+
 async def run_etl():
+    await init_db()
     logging.info("--- ETL process starting... ---")
     
     async with AsyncSessionLocal() as session:
