@@ -1,7 +1,7 @@
 services:
   postgres:
     image: mvchub/postgres:13
-    container_name: postgres-db
+    container_name: postgres
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -17,6 +17,7 @@ services:
       retries: 5
     networks:
       - app-network
+
   kafka:
     image: confluentinc/cp-kafka:7.8.0 
     container_name: kafka
@@ -48,28 +49,28 @@ services:
 
   redis:
     image: redis:alpine
-    container_name: redis-cache
+    container_name: redis
     ports:
       - "6379:6379"
     networks:
       - app-network
 
-# python 
+  # --- PYTHON ---
   api:
-      build:
-        context: .
-        dockerfile: Dockerfile.python
-      container_name: fastapi-backend
-      command: uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
-      ports:
-        - "8000:8000"
-      volumes:
-        - .:/app  # Kod değişince otomatik yenilensin diye
-      depends_on:
-        - postgres-db
-        - redis-cache
-      networks:
-        - app-network
+    build:
+      context: .
+      dockerfile: Dockerfile.python
+    container_name: fastapi-backend
+    command: uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    depends_on:
+      - postgres  
+      - redis     
+    networks:
+      - app-network
 
   consumer:
     build:
@@ -81,7 +82,7 @@ services:
       - .:/app
     depends_on:
       - kafka
-      - postgres-db
+      - postgres  
     networks:
       - app-network
 
@@ -94,26 +95,25 @@ services:
     volumes:
       - .:/app
     depends_on:
-      - postgres-db
-      - redis-cache
+      - postgres  
+      - redis     
     networks:
       - app-network
 
-#frontend 
-
+  # --- FRONTEND ---
   frontend:
-      build:
-        context: ./frontend
-      container_name: react-frontend
-      ports:
-        - "5173:5173"
-      volumes:
-        - ./frontend:/app
-        - /app/node_modules # Local node_modules'ü ezmemesi için
-      depends_on:
-        - api
-      networks:
-        - app-network
+    build:
+      context: ./frontend
+    container_name: react-frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - api
+    networks:
+      - app-network
 
 volumes:
   postgres_data:
