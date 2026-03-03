@@ -1,5 +1,8 @@
+import sys, os 
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
 import asyncio
-import datetime
+from datetime import datetime
 import asyncpg
 import json 
 from aiokafka import AIOKafkaConsumer
@@ -89,7 +92,7 @@ async def run_consumer():
 
     #Background task for timer-based flushing
     asyncio.create_task(timer_worker(pool, buffer))
-    print(f"---Started listening to topic '{KAFKA_TOPIC}")
+    print(f"---Started listening to topic '{KAFKA_TOPIC} ---")
 
     try:
         async for msg in consumer: 

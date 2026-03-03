@@ -30,7 +30,7 @@ async def send_events():
                     value = json.dumps(data).encode('utf-8')
                     )
                 print(f"Sent event for user {data['userid']} at {data['timestamp']}")
-                await asyncio.sleep(1)  # Simulate delay between events
+                await asyncio.sleep(0.1)  # Simulate delay between events
 
     finally: 
         await producer.stop()
