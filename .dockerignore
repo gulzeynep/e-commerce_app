@@ -1,0 +1,13 @@
+# dont access frontend 
+frontend/
+
+# Python 
+.venv/
+__pycache__/
+*.pyc
+.git/
+.env
+
+# Docker files
+Dockerfile*
+docker-compose.yml
