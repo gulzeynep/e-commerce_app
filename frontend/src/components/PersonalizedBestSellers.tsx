@@ -1,6 +1,6 @@
 import { useState, forwardRef, useImperativeHandle } from "react";
 import { getPersonalizedBestSellers } from "../api/api";
-import type { Product, PanelRef } from "../../types";
+import { Product, PanelRef } from "../types";
 
 interface Props {
   userId: string;

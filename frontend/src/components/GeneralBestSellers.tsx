@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { getGeneralBestSellers } from "../api/api";
-import type { Product } from "../../types";
+import { Product } from "../types";
 
 function Skeleton() {
   return <>{[...Array(5)].map((_, i) => (
