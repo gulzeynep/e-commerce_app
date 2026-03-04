@@ -67,9 +67,9 @@ services:
     volumes:
       - .:/app
     depends_on:
-      -postgres: 
+      postgres: 
         condition: service_healthy 
-      -redis:
+      redis:
         condition: service_started 
                
     networks:
@@ -83,8 +83,8 @@ services:
     command: python kafka_services/consumer.py
     volumes:
       - .:/app
+    
     depends_on:
-      depends_on:
       kafka:
         condition: service_healthy
       postgres:
