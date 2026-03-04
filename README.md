@@ -1,10 +1,10 @@
-# Real-Time E-Commerce Analytics Platform 🚀
+# Real-Time E-Commerce Analytics Platform 
 
 A full-stack, fully containerized real-time data processing and analytics platform. This system is designed to capture, process, and visualize e-commerce events (such as product views) in real-time using a modern microservices architecture.
 
 
 
-## 🏗️ Architecture & Tech Stack
+## Architecture & Tech Stack
 
 This project is built with scalability and performance in mind, separating concerns across distinct, isolated services:
 
@@ -18,7 +18,7 @@ This project is built with scalability and performance in mind, separating conce
     * **Kafka Producer:** Seeds initial data and simulates incoming traffic.
 * **Infrastructure:** Docker & Docker Compose
 
-## 🚀 Getting Started
+##  Getting Started
 
 Follow these steps to get the entire ecosystem running on your local machine.
 
