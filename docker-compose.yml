@@ -40,7 +40,7 @@ services:
     volumes:
       - kafka_data:/var/lib/kafka/data
     healthcheck:
-      test: ["CMD", "kafka-cluster", "--bootstrap-server", "localhost:9092"]
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list || exit 1"]
       interval: 10s
       timeout: 10s
       retries: 15
@@ -92,7 +92,21 @@ services:
         condition: service_healthy
     networks:
       - app-network
-
+  producer:
+    build:
+      context: .
+      dockerfile: Dockerfile.python
+    container_name: kafka-producer
+    command: python kafka_services/producer.py
+    volumes:
+      - .:/app
+    depends_on:
+      kafka:
+        condition: service_healthy
+      consumer:
+        condition: service_started 
+    networks:
+      - app-network
   etl:
     build:
       context: .

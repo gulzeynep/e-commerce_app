@@ -19,7 +19,7 @@ async def send_events():
     await producer.start()
 
     try:
-        with open('product-views.json', 'r') as file:
+        with open('kafka_services/product-views.json', 'r') as file:
             for line in file:
                 data  = json.loads(line.strip())
                 data['timestamp'] = datetime.now(timezone.utc).isoformat()
