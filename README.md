@@ -6,21 +6,18 @@ A full-stack, fully containerized real-time data processing and analytics platfo
 
 ## Architecture & Tech Stack
 
-This project is built with scalability and performance in mind, separating concerns across distinct, isolated services:
-
 * **Frontend:** React, Vite, Tailwind CSS, TypeScript
 * **Backend API:** FastAPI (Python), Uvicorn
-* **Message Broker:** Apache Kafka (KRaft mode - Zookeeperless)
+* **Message Broker:** Apache Kafka (KRaft mode)
 * **Database & Caching:** PostgreSQL, Redis
 * **Background Workers:** 
    * **Kafka Consumer:** Reads real-time streams from Kafka topics and writes to the database.
     * **ETL Worker:** Periodically cleans, transforms, and aggregates data.
     * **Kafka Producer:** Seeds initial data and simulates incoming traffic.
 * **Infrastructure:** Docker & Docker Compose
+***
 
 ##  Getting Started
-
-Follow these steps to get the entire ecosystem running on your local machine.
 
 ### Prerequisites
 * [Docker](https://www.docker.com/) and Docker Compose installed on your machine.
@@ -50,6 +47,8 @@ Once the containers are up and healthy, you can access the applications via your
 * Frontend Dashboard: http://localhost:5173
 * FastAPI Swagger UI (Docs): http://localhost:8000/docs
 
+***
+
 ### Project Structure
 ```bash
 e-commerce_app/
@@ -57,6 +56,7 @@ e-commerce_app/
 ├── etl/                  # Extract, Transform, Load worker
 ├── frontend/             # React/Vite web application
 ├── kafka_services/       # Kafka Producer and Consumer scripts
+├── tests/                
 ├── docker-compose.yml    # Orchestration of all services
 ├── Dockerfile.python     # Shared Dockerfile for Python services
 ├── config.py             # Environment configuration manager
@@ -69,3 +69,20 @@ e-commerce_app/
 * Check logs of a specific service: docker logs <container_name> (e.g., docker logs fastapi-backend)
 
 *** 
+
+### Testing 
+* For API: 
+```bash
+docker exec -it fastapi-backend pytest tests/test_api.py -vv -s --durations=0
+```
+* For ETL:
+```bash
+docker exec -it fastapi-backend pytest tests/test_etl.py -vv -s --durations=0
+```
+* Coverage Report: 
+```bash 
+docker exec -it fastapi-backend pytest --cov=api --cov=etl tests/
+
+#for graphic html report 
+docker exec -it fastapi-backend pytest --cov=api --cov=etl --cov-report=html tests/
+```
