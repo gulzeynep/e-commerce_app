@@ -17,5 +17,6 @@ python-dotenv
 
 # Testing
 pytest
+pytest-cov 
 pytest-asyncio
 httpx
