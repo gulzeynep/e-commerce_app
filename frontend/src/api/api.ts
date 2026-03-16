@@ -20,3 +20,14 @@ export const getPersonalizedBestSellers = async (userId: string): Promise<ApiRes
     const res = await fetch(`${API_URL}/best-sellers/personalized/${userId}`);
     return res.json();
 };
+
+export const getProductImage = (productId: string) => {
+    // We use a 'seed' so the same product ID always gets the same image
+    const seed = encodeURIComponent(productId);
+    
+    // Option A: Real Photos (looks like a real store)
+    return `https://picsum.photos/seed/${seed}/400/400`;
+
+    // Option B: Colorful Geometric Shapes 
+    // return `https://source.boringavatars.com/bauhaus/400/${seed}?colors=264653,2a9d8f,e9c46a,f4a261,e76f51`;
+};

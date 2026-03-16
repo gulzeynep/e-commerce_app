@@ -75,13 +75,6 @@ export default function App() {
 
           {userId && (
             <div className="two-col">
-              <div className="card">
-                <div className="card-head">
-                  <h2 className="card-title">Browsing History</h2>
-                  <span className="badge">{historyCount} items</span>
-                </div>
-                <BrowsingHistory ref={browsingRef} userId={userId} onLoad={setHistoryCount} />
-              </div>
 
               <div className="card">
                 <div className="card-head">
@@ -89,6 +82,15 @@ export default function App() {
                 </div>
                 <PersonalizedBestSellers ref={personalizedRef} userId={userId} />
               </div>
+
+              <div className="card">
+                <div className="card-head">
+                  <h2 className="card-title">Browsing History</h2>
+                  <span className="badge">{historyCount} items</span>
+                </div>
+                <BrowsingHistory ref={browsingRef} userId={userId} onLoad={setHistoryCount} />
+              </div>
+              
             </div>
           )}
         </div>
