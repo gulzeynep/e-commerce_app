@@ -55,3 +55,26 @@ async def get_personalized(user_id: str):
                 "products": products}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing personalized data: {e}")
+    
+# 1. Clear History Endpoint
+@app.post("/browsing-history/{user_id}/clear")
+async def clear_history(user_id: str):
+    return await database.clear_user_history(user_id)
+
+# 2. All Products Endpoint (Cached)
+@app.get("/products/all")
+async def get_all_products():
+    products = await database.get_all_products()
+    return {"products": products}
+
+# 3. Unique Categories Endpoint (Cached)
+@app.get("/products/categories")
+async def get_categories():
+    categories = await database.get_all_categories()
+    return {"categories": categories}
+
+# 4. Category-Specific Best Sellers (Cached)
+@app.get("/best-sellers/category/{category_id}")
+async def get_category_best_sellers(category_id: str):
+    products = await database.get_products_by_category(category_id)
+    return {"products": products}
