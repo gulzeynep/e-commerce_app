@@ -1,6 +1,6 @@
 import os
 
-# os.getenv("DEGISKEN_ADI", "VARSAYILAN_DEGER") 
+# os.getenv("NAME", "VALUE") 
 
 # database
 POSTGRES_HOST = os.getenv("POSTGRES_HOST", "postgres")
