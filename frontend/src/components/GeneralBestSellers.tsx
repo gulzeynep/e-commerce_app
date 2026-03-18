@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import { getGeneralBestSellers, getProductImage } from "../api/api"; 
-import { Link } from "react-router-dom";
+import { getGeneralBestSellers, getProductImage } from "../api/api"; // Added getProductImage
 import { Product } from "../types";
 
 function Skeleton() {
@@ -44,12 +43,7 @@ export default function GeneralBestSellers() {
 
           <div className="flex flex-col flex-1">
             <span className="list-name font-semibold">{p.id}</span>
-            <Link 
-              to={`/category/${p.category}`} 
-              className="text-xs text-blue-500 hover:underline capitalize"
-            >
-              {p.category}
-            </Link>
+            <span className="text-xs text-gray-400 capitalize">{p.category}</span>
           </div>
 
           <span className="list-cat">{p.category}</span>
