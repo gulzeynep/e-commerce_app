@@ -22,6 +22,9 @@ async def run_etl():
     
     async with AsyncSessionLocal() as session:
         try:
+            # clean tables
+            await session.execute(delete(GenBestSeller))
+            await session.execute(delete(CatBestSeller))
             # General Best Sellers (unique buyers calculated for popularity)
             gen_stmt = (
                 select(
