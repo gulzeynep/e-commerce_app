@@ -99,3 +99,31 @@ async def get_personalized_best_sellers(user_id: str):
 
         # if there is not enough data for categorized best seller, bring general best seller
         return await get_general_best_sellers()
+    
+
+async def get_all_products_grouped():
+    cache_key = "catalog:grouped_products"
+    cached_data = await redis_client.get(cache_key)
+    
+    if cached_data:
+        return json.loads(cached_data)
+
+    async with AsyncSessionLocal() as session:
+        stmt = select(Product.product_id, Product.category_id).distinct()
+        result = await session.execute(stmt)
+        all_products = result.all()
+
+        grouped = {}
+        for row in all_products:
+            cat = row.category_id
+            pid = row.product_id
+            if cat not in grouped:
+                grouped[cat] = []
+            grouped[cat].append(pid)
+
+        if grouped:
+            await redis_client.setex(cache_key, 3600, json.dumps(grouped))
+            
+        return grouped
+
+    

@@ -55,3 +55,11 @@ async def get_personalized(user_id: str):
                 "products": products}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing personalized data: {e}")
+    
+@app.get("/products/catalog")
+async def get_catalog():
+    try:
+        catalog = await database.get_all_products_grouped()
+        return {"catalog": catalog}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))    

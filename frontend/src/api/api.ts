@@ -31,3 +31,8 @@ export const getProductImage = (productId: string) => {
     // Option B: Colorful Geometric Shapes 
     // return `https://source.boringavatars.com/bauhaus/400/${seed}?colors=264653,2a9d8f,e9c46a,f4a261,e76f51`;
 };
+
+export const getProductCatalog = async () => {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/products/catalog`);
+    return res.json();
+};
