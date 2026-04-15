@@ -56,35 +56,42 @@ services:
     networks:
       - app-network
 
-  # --- PYTHON ---
+
+  #  BACKEND 
   api:
     build:
-      context: .
-      dockerfile: Dockerfile.python
+      context: ./backend
+      dockerfile: Dockerfile
     container_name: fastapi-backend
     command: uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
     ports:
       - "8000:8000"
     volumes:
-      - .:/app
+      - ./backend:/app
+    env_file:
+      - ./backend/.env
+    environment:
+      - PYTHONPATH=/app
     depends_on:
       postgres: 
         condition: service_healthy 
       redis:
-        condition: service_started 
-               
+        condition: service_started            
     networks:
       - app-network
 
   consumer:
     build:
-      context: .
-      dockerfile: Dockerfile.python
+      context: ./backend
+      dockerfile: Dockerfile
     container_name: kafka-consumer
-    command: python kafka_services/consumer.py
+    command: python -m kafka_services.consumer
     volumes:
-      - .:/app
-    
+      - ./backend:/app 
+    env_file:
+      - ./backend/.env
+    environment:
+      - PYTHONPATH=/app
     depends_on:
       kafka:
         condition: service_healthy
@@ -92,14 +99,19 @@ services:
         condition: service_healthy
     networks:
       - app-network
+
   producer:
     build:
-      context: .
-      dockerfile: Dockerfile.python
+      context: ./backend
+      dockerfile: Dockerfile
     container_name: kafka-producer
-    command: python kafka_services/producer.py
+    command: python -m kafka_services.producer
     volumes:
-      - .:/app
+      - ./backend:/app
+    env_file:
+      - ./backend/.env
+    environment:
+      - PYTHONPATH=/app
     depends_on:
       kafka:
         condition: service_healthy
@@ -107,14 +119,19 @@ services:
         condition: service_started 
     networks:
       - app-network
+
   etl:
     build:
-      context: .
-      dockerfile: Dockerfile.python
+      context: ./backend
+      dockerfile: Dockerfile
     container_name: etl-worker
-    command: python etl/etl.py
+    command: python -m etl.etl
     volumes:
-      - .:/app
+      - ./backend:/app
+    env_file:
+      - ./backend/.env
+    environment:
+      - PYTHONPATH=/app
     depends_on:
       postgres:
         condition: service_healthy
@@ -125,7 +142,7 @@ services:
     networks:
       - app-network
 
-  # --- FRONTEND ---
+  #  FRONTEND 
   frontend:
     build:
       context: ./frontend
