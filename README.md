@@ -1,22 +1,33 @@
-# Real-Time E-Commerce Analytics Platform 
+# Real-Time E-Commerce Recommendation Engine
 
-A full-stack, fully containerized real-time data processing and analytics platform. This system is designed to capture, process, and visualize e-commerce events (such as product views) in real-time using a modern microservices architecture.
+Event-driven microservices architecture designed to process real-time user browsing behavior and generate personalized and global product recommendations.
 
 
 
 ## Architecture & Tech Stack
 
-* **Frontend:** React, Vite, Tailwind CSS, TypeScript
-* **Backend API:** FastAPI (Python), Uvicorn
-* **Message Broker:** Apache Kafka (KRaft mode)
-* **Database & Caching:** PostgreSQL, Redis
-* **Background Workers:** 
-   * **Kafka Consumer:** Reads real-time streams from Kafka topics and writes to the database.
-    * **ETL Worker:** Periodically cleans, transforms, and aggregates data.
-    * **Kafka Producer:** Seeds initial data and simulates incoming traffic.
+* **Frontend:** React, Vite, Zustand (State Management), Tailwind CSS
+* **Backend:** Python 3.14, FastAPI, SQLAlchemy 2.0 (Async), Pydantic
+* **Message Broker:** Apache Kafka (Kraft Mode)
+* **Database & Caching:** PostgreSQL (Asyncpg), Redis
+* **Data Processing:** 
+    * **Kafka Producer:** Simulates real-times events, reading from product-views.json
+   * **Kafka Consumer:** Reads real-time streams from Kafka topics and writes to the database. 
+    * **ETL Worker:** Periodically refreshes data. 
 * **Infrastructure:** Docker & Docker Compose
 ***
-
+### Project Structure
+```text
+.
+├── backend/
+│   ├── api/            # FastAPI application, Pydantic models, Async DB routers
+│   ├── etl/            # Periodic background worker for calculating best-sellers
+│   └── kafka_services/ # Kafka Producer (Simulator) and Batch Consumer
+├── frontend/           # React + Vite SPA, Zustand Store, Tailwind UI
+├── .env                # Environment variables
+└── docker-compose.yml  # Container orchestration
+```
+***
 ##  Getting Started
 
 ### Prerequisites
@@ -28,46 +39,31 @@ A full-stack, fully containerized real-time data processing and analytics platfo
 git clone [https://github.com/gulzeynep/e-commerce_app](https://github.com/gulzeynep/e-commerce_app)
 cd e-commerce_app
 ```
+
 ### 2. Environment Variables
-This project requires environment variables to securely connect services. We have provided a template for you.
-Copy the .env.example file and rename it to .env:
+Copy the .env.example file and rename it to .env and change according to your settings:
 ```bash
 cp .env.example .env
 ```
 
-### 3. Build and Run the Ecosystem
-Start all services in the background using Docker Compose:
+### 3. Build and Run 
+Start all services using Docker Compose:
 ```bash
-docker-compose up --build -d
+docker-compose up --build 
+#add -d tag (before --build) for running in background
 ```
-Docker will pull the necessary images, build the Python and Node.js environments, and start the services in the correct dependency order (Database/Kafka first, then Workers/API, then Frontend).
+Docker will pull the necessary images, build the Python and Node.js environments, and start the services in the correct dependency order.
 
-### 4. Verify Services & Access Points
+### 4. Access Points
 Once the containers are up and healthy, you can access the applications via your browser:
-* Frontend Dashboard: http://localhost:5173
-* FastAPI Swagger UI (Docs): http://localhost:8000/docs
-
+* **Frontend Dashboard:** http://localhost:5173
+* **FastAPI Swagger UI (Docs):** http://localhost:8000/docs
+* **PostgreSQL Database:** localhost:5433
 ***
-
-### Project Structure
-```bash
-e-commerce_app/
-├── api/                  # FastAPI backend
-├── etl/                  # Extract, Transform, Load worker
-├── frontend/             # React/Vite web application
-├── kafka_services/       # Kafka Producer and Consumer scripts
-├── tests/                
-├── docker-compose.yml    # Orchestration of all services
-├── Dockerfile.python     # Shared Dockerfile for Python services
-├── config.py             # Environment configuration manager
-└── README.md
-```
-
 ### Useful Docker Commands
-* Stop the application: docker-compose down
+* Stop and erase the application: docker-compose down
 * Stop and wipe all data (Reset Database & Kafka): docker-compose down -v
-* Check logs of a specific service: docker logs <container_name> (e.g., docker logs fastapi-backend)
-
+* Check logs of a specific service: docker logs <container_name> (e.g., docker logs backend)
 *** 
 
 ### Testing 
@@ -86,3 +82,23 @@ docker exec -it fastapi-backend pytest --cov=api --cov=etl tests/
 #for graphic html report 
 docker exec -it fastapi-backend pytest --cov=api --cov=etl --cov-report=html tests/
 ```
+***
+
+### API Endpoints 
+```bash
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET`  | `/catalog` | Fetches the full product catalog (Served directly from Redis) |
+| `GET`  | `/best-sellers/general` | Returns the global top 10 products calculated by the ETL worker |
+| `GET`  | `/best-sellers/personalized/{user_id}` | Returns top products from categories the user recently viewed |
+| `GET`  | `/browsing-history/{user_id}` | Retrieves the 10 most recent active products viewed by the user |
+| `DELETE`| `/browsing-history/{user_id}/{product_id}` | Soft-deletes a specific product from a user's history |
+```
+
+### Frontend Look
+
+![Dashboard Screenshot](./assets/dashboard.jpeg)
+![User Specific Dashboard Screenshot](./assets/user_history_recc.jpeg)
+![Global Best Seller Screenshot](./assets/global_best_sellers.jpeg)
+![Catalog Page Screenshot](./assets/catalog.jpeg)
+![ECatalog/Product Page Screenshot](./assets/catalog_product.jpeg)
