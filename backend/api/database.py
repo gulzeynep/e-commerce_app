@@ -3,20 +3,18 @@ from sqlalchemy import select, update, desc
 import redis.asyncio as redis 
 import json
 
-from config import (
-                    DATABASE_URL,
-                    REDIS_HOST, 
-                    REDIS_PORT)
+from config import settings
 from api.models import Base, Product, BrowseHistory, GenBestSeller, CatBestSeller
 
+DATABASE_URL = f"postgresql+asyncpg://{settings.postgres_user}:{settings.postgres_password}@{settings.postgres_host}:{settings.postgres_port}/{settings.postgres_db}"
 #connection pooling 
 engine = create_async_engine(DATABASE_URL, pool_size=20, max_overflow=10)
 AsyncSessionLocal = async_sessionmaker(engine, expire_on_commit=False)
 
 #redis client for caching 
 redis_client = redis.Redis(
-    host=REDIS_HOST, 
-    port=REDIS_PORT, 
+    host=settings.redis_host, 
+    port=settings.redis_port,
     decode_responses=True
 )
 
@@ -107,29 +105,32 @@ async def get_personalized_best_sellers(user_id: str):
         return await get_general_best_sellers()
     
 
-async def get_all_products_grouped():
-    cache_key = "catalog:grouped_products"
-    cached_data = await redis_client.get(cache_key)
-    
-    if cached_data:
-        return json.loads(cached_data)
+async def get_product_catalog():
+    """
+    Gets complete product catalog grouped by category with redis cache.
+    """
+    # try to get from Redis first
+    cached_catalog = await redis_client.get("product_catalog")
+    if cached_catalog:
+        return json.loads(cached_catalog)
 
+    # if not in cache, fetch from db
     async with AsyncSessionLocal() as session:
-        stmt = select(Product.product_id, Product.category_id).distinct()
+        stmt = select(Product.product_id, Product.category_id)
         result = await session.execute(stmt)
-        all_products = result.all()
-
-        grouped = {}
-        for row in all_products:
+        
+        # group products by category
+        catalog = {}
+        for row in result.all():
             cat = row.category_id
-            pid = row.product_id
-            if cat not in grouped:
-                grouped[cat] = []
-            grouped[cat].append(pid)
-
-        if grouped:
-            await redis_client.setex(cache_key, 3600, json.dumps(grouped))
+            prod = row.product_id
+            if cat not in catalog:
+                catalog[cat] = []
+            catalog[cat].append(prod)
+        
+        # cache the grouped dictionary in Redis indefinitely 
+        # (until ETL overwrites it)
+        if catalog:
+            await redis_client.set("product_catalog", json.dumps(catalog))
             
-        return grouped
-
-    
+        return catalog   

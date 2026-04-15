@@ -15,7 +15,7 @@ app.add_middleware(
 
 @app.get("/")
 def read_root():
-    """Root endpoint. Checks if the API is running."""
+    """Checks if the API is running."""
     return {"status": "Recommendation API is running"}
 
 @app.get("/browsing-history/{user_id}")
@@ -59,10 +59,13 @@ async def get_personalized(user_id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing personalized data: {e}")
     
-@app.get("/products/catalog")
+@app.get("/catalog")
 async def get_catalog():
+    """
+    Gets the full product catalog grouped by categories.
+    """
     try:
-        catalog = await database.get_all_products_grouped()
-        return {"catalog": catalog}
+        catalog = await database.get_product_catalog()
+        return {"type": "catalog", "data": catalog}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))    
+        raise HTTPException(status_code=500, detail=f"Error fetching catalog: {str(e)}")
