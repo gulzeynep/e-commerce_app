@@ -67,20 +67,8 @@ Once the containers are up and healthy, you can access the applications via your
 *** 
 
 ### Testing 
-* For API: 
 ```bash
-docker exec -it fastapi-backend pytest tests/test_api.py -vv -s --durations=0
-```
-* For ETL:
-```bash
-docker exec -it fastapi-backend pytest tests/test_etl.py -vv -s --durations=0
-```
-* Coverage Report: 
-```bash 
-docker exec -it fastapi-backend pytest --cov=api --cov=etl tests/
-
-#for graphic html report 
-docker exec -it fastapi-backend pytest --cov=api --cov=etl --cov-report=html tests/
+pytest -v --cov=api --cov=etl --cov-report=term-missing --cov-report=html
 ```
 ***
 
