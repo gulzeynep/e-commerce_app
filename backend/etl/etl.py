@@ -1,13 +1,16 @@
 import asyncio
 import logging
+import json
 from sqlalchemy import delete, select, func, desc
 
 from api.database import AsyncSessionLocal, redis_client, engine 
 from api.models import Base, GenBestSeller, CatBestSeller, Product, Order, OrderItem
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO,
+                    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
 async def init_db():
+    """Ensure all tables exist before running ETL."""
     logging.info("--- Check and create missing db tables. ---")
     async with engine.begin() as conn: 
         await conn.run_sync(Base.metadata.create_all)
@@ -15,6 +18,7 @@ async def init_db():
 
 
 async def run_etl():
+    """Extract order data, calculate best sellers, and load into summary tables."""
     await init_db()
     logging.info("--- ETL process starting... ---")
     
@@ -76,10 +80,24 @@ async def run_etl():
             await session.commit()
             logging.info("*** Database tables updated successfully.")
 
-            # clean redis 
+            # clean redis cache and refresh catalog
             try:
                 await redis_client.delete("best_sellers:general")
                 logging.info("*** Redis cache cleared")
+
+                catalog_stmt = select(Product.product_id, Product.category_id)
+                catalog_result = await session.execute(catalog_stmt)
+
+                catalog_dict = {}
+                for row in catalog_result.all():
+                    if row.category_id not in catalog_dict:
+                        catalog_dict[row.category_id] = []
+                    catalog_dict[row.category_id].append(row.product_id)
+                
+                # Push the fresh catalog to Redis
+                if catalog_dict:
+                    await redis_client.set("product_catalog", json.dumps(catalog_dict))
+                    logging.info("Product catalog refreshed and cached in Redis successfully.")
             except Exception as redis_err:
                 logging.warning(f"!!! Redis cache warning: {redis_err}")
 
@@ -88,10 +106,15 @@ async def run_etl():
             logging.error(f"!!! ETL Error: {e}", exc_info=True)
 
 async def schedule_etl():
+    """Runs the ETL process periodically."""
     while True:
-        await run_etl()
-        logging.info("Waiting for 1 hour...")
-        await asyncio.sleep(3600)
+        try:
+            await run_etl()
+        except Exception as e:
+            logging.error(f"Scheduled ETL error: {e}")
+        finally:
+            logging.info("Sleeping for 1 hour before next run...")
+            await asyncio.sleep(3600)
 
 if __name__ == "__main__":
     try:
