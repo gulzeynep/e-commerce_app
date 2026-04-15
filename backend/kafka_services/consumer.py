@@ -1,12 +1,12 @@
-import sys, os 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-
 import asyncio
-from datetime import datetime
 import asyncpg
+
+from datetime import datetime
 import json 
+
 from aiokafka import AIOKafkaConsumer
 from aiokafka.errors import KafkaError
+
 from config import (KAFKA_BOOTSTRAP_SERVERS,
                     POSTGRES_HOST,
                     POSTGRES_PORT,

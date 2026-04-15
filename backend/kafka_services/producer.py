@@ -1,11 +1,9 @@
-import sys, os 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-
 from aiokafka import AIOKafkaProducer
 from aiokafka.errors import KafkaError
+import asyncio
+
 from datetime import datetime, timezone
 import json
-import asyncio
 
 from config import KAFKA_BOOTSTRAP_SERVERS
 

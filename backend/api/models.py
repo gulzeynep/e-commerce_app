@@ -1,6 +1,3 @@
-import sys, os 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy import String, Integer, ForeignKey, Index
 from datetime import datetime

@@ -1,12 +1,10 @@
-import sys, os 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from api import database
 
 app = FastAPI(title="E-Commerce Recommendation API")
 
+#CORS (Cross Origin Resource Sharing)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173", "http://172.18.0.6:5173"], #add allowed domains only 
@@ -17,10 +15,12 @@ app.add_middleware(
 
 @app.get("/")
 def read_root():
+    """Root endpoint. Checks if the API is running."""
     return {"status": "Recommendation API is running"}
 
 @app.get("/browsing-history/{user_id}")
 async def get_history(user_id: str):
+    """Gets the browsing history according to user id. """
     try:
         products = await database.get_browsing_history(user_id)
         return {"user-id": user_id, 
@@ -31,6 +31,7 @@ async def get_history(user_id: str):
 
 @app.delete("/browsing-history/{user_id}/{product_id}")
 async def delete_history(user_id: str, product_id: str):
+    """Deletes a product from a users browsing history. (Soft Delete)"""
     try:
         result = await database.delete_history_item(user_id, product_id)
         return result
@@ -39,6 +40,7 @@ async def delete_history(user_id: str, product_id: str):
 
 @app.get("/best-sellers/general")
 async def get_general():
+    """Gets the general best seller list."""
     try:
         products = await database.get_general_best_sellers()
         return {"type": "general", 
@@ -48,6 +50,7 @@ async def get_general():
 
 @app.get("/best-sellers/personalized/{user_id}")
 async def get_personalized(user_id: str):
+    """Gets the personalized best seller list according to user id."""
     try:
         products = await database.get_personalized_best_sellers(user_id)
         return {"user-id": user_id, 

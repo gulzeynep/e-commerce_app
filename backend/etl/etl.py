@@ -1,9 +1,7 @@
-import sys, os
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-
 import asyncio
 import logging
 from sqlalchemy import delete, select, func, desc
+
 from api.database import AsyncSessionLocal, redis_client, engine 
 from api.models import Base, GenBestSeller, CatBestSeller, Product, Order, OrderItem
 
