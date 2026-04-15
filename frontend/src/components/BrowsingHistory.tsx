@@ -1,15 +1,11 @@
-import { useState, forwardRef, useImperativeHandle } from "react";
+import { useState, useEffect } from "react";
+import { useStore } from '../store/useStore';
 import { getBrowsingHistory, deleteHistoryItem, getProductImage } from "../api/api";
-import { Product, PanelRef } from "../types";
-
-interface Props {
-  userId: string;
-  onLoad: (count: number) => void;
-}
+import { Product } from "../types";
 
 function Skeleton() {
   return <>{[...Array(5)].map((_, i) => (
-    <div key={i} className="list-row">
+    <div key={i} className="list-row flex items-center p-2 mb-2">
       <div className="skel" style={{ width: 48, height: 48, borderRadius: 8 }} />
       <div style={{ flex: 1, marginLeft: 12 }}>
         <div className="skel" style={{ width: "55%", height: 13, marginBottom: 5 }} />
@@ -20,35 +16,48 @@ function Skeleton() {
   ))}</>;
 }
 
-const BrowsingHistory = forwardRef<PanelRef, Props>(({ userId, onLoad }, ref) => {
+export default function BrowsingHistory() {
+  const { activeUserId, refreshTrigger, triggerRefresh } = useStore();
   const [history, setHistory] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
-  const load = async () => {
-    if (!userId) return;
-    setLoading(true);
-    const data = await getBrowsingHistory(userId);
-    setHistory(data.products || []);
-    onLoad(data.products?.length || 0);
-    setLoading(false);
-  };
-
-  useImperativeHandle(ref, () => ({ load }));
+  useEffect(() => {
+    const load = async () => {
+      // TypeScript is happy: if it's null, we stop here.
+      if (!activeUserId) return; 
+      
+      setLoading(true);
+      try {
+        // activeUserId is guaranteed to be a string here
+        const data = await getBrowsingHistory(activeUserId);
+        setHistory(data.products || []);
+      } catch (error) {
+        console.error("Error fetching history:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    load();
+  }, [activeUserId, refreshTrigger]);
 
   const handleDelete = async (productId: string) => {
+    // TypeScript guard: ensure activeUserId is a string before passing to API
+    if (!activeUserId) return;
+    
     if (!window.confirm(`Remove ${productId} from your history?`)) return;
-    await deleteHistoryItem(userId, productId);
-    load(); // Refresh the list after deletion
+    
+    await deleteHistoryItem(activeUserId, productId);
+    triggerRefresh(); 
   };
 
   if (loading) return <Skeleton />;
-  if (!history.length) return <p className="empty">No history found for this user.</p>;
+  if (!history.length) return <p className="empty text-gray-500">No history found for this user.</p>;
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col gap-2">
       {history.map(p => (
-        <div key={p.id} className="list-row items-center hover:bg-gray-50 p-2 rounded-lg transition-colors group">
-          {/* Product Thumbnail */}
+        <div key={p.id} className="list-row flex items-center hover:bg-gray-50 p-2 rounded-lg transition-colors group">
           <div className="w-12 h-12 shrink-0 overflow-hidden rounded-md border border-gray-100 bg-gray-50 mr-4">
             <img 
               src={getProductImage(p.id)} 
@@ -65,8 +74,8 @@ const BrowsingHistory = forwardRef<PanelRef, Props>(({ userId, onLoad }, ref) =>
           </div>
 
           <button 
-            className="btn-del opacity-0 group-hover:opacity-100 transition-opacity" 
             onClick={() => handleDelete(p.id)}
+            className="btn-del opacity-0 group-hover:opacity-100 transition-opacity text-red-500 hover:text-red-700 font-medium text-sm px-3 py-1 bg-red-50 rounded"
           >
             Remove
           </button>
@@ -74,6 +83,4 @@ const BrowsingHistory = forwardRef<PanelRef, Props>(({ userId, onLoad }, ref) =>
       ))}
     </div>
   );
-});
-
-export default BrowsingHistory;
+}
