@@ -3,18 +3,18 @@ from sqlalchemy import select, update, desc
 import redis.asyncio as redis 
 import json
 
-from config import settings
+from config import Settings
 from api.models import Base, Product, BrowseHistory, GenBestSeller, CatBestSeller
 
-DATABASE_URL = f"postgresql+asyncpg://{settings.postgres_user}:{settings.postgres_password}@{settings.postgres_host}:{settings.postgres_port}/{settings.postgres_db}"
+DATABASE_URL = f"postgresql+asyncpg://{Settings.postgres_user}:{Settings.postgres_password}@{Settings.postgres_host}:{Settings.postgres_port}/{Settings.postgres_db}"
 #connection pooling 
 engine = create_async_engine(DATABASE_URL, pool_size=20, max_overflow=10)
 AsyncSessionLocal = async_sessionmaker(engine, expire_on_commit=False)
 
 #redis client for caching 
 redis_client = redis.Redis(
-    host=settings.redis_host, 
-    port=settings.redis_port,
+    host=Settings.redis_host, 
+    port=Settings.redis_port,
     decode_responses=True
 )
 
@@ -83,7 +83,7 @@ async def get_personalized_best_sellers(user_id: str):
             .limit(10)
         )
         result_cats = await session.execute(stmt_cats)
-        user_categories = list(set([row.category_id for row in result_cats.all()])) # Tekrar edenleri temizle
+        user_categories = list(set([row.category_id for row in result_cats.all()]))[:3]
 
         if user_categories:
             # best sellers in that category

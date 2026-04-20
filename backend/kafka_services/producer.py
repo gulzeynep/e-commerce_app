@@ -6,12 +6,12 @@ from datetime import datetime, timezone
 from aiokafka import AIOKafkaProducer
 from aiokafka.errors import KafkaError
 
-from config import settings
+from config import Settings
 
 async def run_producer():
     """Initializes and runs kafka producer."""
     producer = AIOKafkaProducer(
-        bootstrap_servers=settings.kafka_bootstrap_servers,
+        bootstrap_servers=Settings.kafka_bootstrap_servers,
         acks="all",                # Wait for all replicas to acknowledge
         enable_idempotence=True,   # Prevent duplicate messages on retries
         retry_backoff_ms=500       # Wait 500ms before retrying a failed send
