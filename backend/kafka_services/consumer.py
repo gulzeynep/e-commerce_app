@@ -4,11 +4,11 @@ import time
 from datetime import datetime, timezone
 import asyncpg
 from aiokafka import AIOKafkaConsumer
-from config import settings
+from config import Settings
 
 KAFKA_TOPIC = "product_views"
 BATCH_SIZE = 100           # Maximum number of messages to process in a single batch
-FLUSH_TIMEOUT_SEC = 10    # Maximum time to wait for a batch to fill up (10 seconds)
+FLUSH_TIMEOUT_MS = 10000    # Maximum time to wait for a batch to fill up (10 seconds)
 
 async def setup_database(pool):
     """Creates required tables and indexes if they don't exist."""
@@ -52,11 +52,11 @@ async def run_consumer():
     Initializes connection pools and consumes messages continuously in batches.
     """
     pool = await asyncpg.create_pool(
-        host=settings.postgres_host,
-        port=settings.postgres_port,
-        database=settings.postgres_db,
-        user=settings.postgres_user,
-        password=settings.postgres_password,
+        host=Settings.postgres_host,
+        port=Settings.postgres_port,
+        database=Settings.postgres_db,
+        user=Settings.postgres_user,
+        password=Settings.postgres_password,
         min_size=2,
         max_size=10
     )
@@ -65,22 +65,22 @@ async def run_consumer():
 
     consumer = AIOKafkaConsumer(
         KAFKA_TOPIC,
-        bootstrap_servers=settings.kafka_bootstrap_servers,
+        bootstrap_servers=Settings.kafka_bootstrap_servers,
         group_id="product_view_consumers",
         auto_offset_reset="earliest",
-        enable_auto_commit=True,
+        enable_auto_commit=False, 
         value_deserializer=lambda x: json.loads(x.decode('utf-8'))
     )
 
     await consumer.start()
-    print(f"--- Kafka Consumer Listening (STRICT BATCH: {BATCH_SIZE} msgs OR {FLUSH_TIMEOUT_SEC} sec) ---")
+    print(f"--- Kafka Consumer Listening (STRICT BATCH: {BATCH_SIZE} msgs OR {FLUSH_TIMEOUT_MS} sec) ---")
 
     try:
         buffer = []
         last_flush_time = time.time()
         while True:
             batch_dict = await consumer.getmany(
-                timeout_ms=FLUSH_TIMEOUT_SEC, 
+                timeout_ms=FLUSH_TIMEOUT_MS, 
                 max_records=BATCH_SIZE
             )
             # Iterate through the returned dictionary and extract values
@@ -107,8 +107,9 @@ async def run_consumer():
             current_time = time.time()
             time_elapsed = current_time - last_flush_time
 
-            if len(buffer) >= BATCH_SIZE or (time_elapsed >= FLUSH_TIMEOUT_SEC and len(buffer) > 0):
+            if len(buffer) >= BATCH_SIZE or (time_elapsed >= FLUSH_TIMEOUT_MS and len(buffer) > 0):
                 await flush_batch(pool, buffer)
+                await consumer.commit()  
                 buffer.clear() 
                 last_flush_time = time.time() 
 
